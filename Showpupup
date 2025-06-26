@@ -1,0 +1,114 @@
+function ShowPopup(config)
+    local PlayerGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    if PlayerGui:FindFirstChild("RayfieldStylePopup") then
+        PlayerGui:FindFirstChild("RayfieldStylePopup"):Destroy()
+    end
+    local popupGui = Instance.new("ScreenGui")
+    popupGui.Name = "RayfieldStylePopup"
+    popupGui.IgnoreGuiInset = true
+    popupGui.ResetOnSpawn = false
+    popupGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    popupGui.Parent = PlayerGui
+    local bgBlur = Instance.new("Frame")
+    bgBlur.Size = UDim2.new(1, 0, 1, 0)
+    bgBlur.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    bgBlur.BackgroundTransparency = 0.6
+    bgBlur.ZIndex = 5
+    bgBlur.Name = "Background"
+    bgBlur.Parent = popupGui
+    local boxWidth = config.Box_X or 320
+    local boxHeight = config.Box_Y or 160
+    local popupFrame = Instance.new("Frame")
+    popupFrame.Size = UDim2.new(0, 0, 0, 0) -- Start small for animation
+    popupFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+    popupFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    popupFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 30)
+    popupFrame.BorderSizePixel = 0
+    popupFrame.ZIndex = 6
+    popupFrame.BackgroundTransparency = 0
+    popupFrame.Parent = popupGui
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = popupFrame
+    local shadow = Instance.new("UIStroke")
+    shadow.Thickness = 2
+    shadow.Color = Color3.fromRGB(45, 45, 50)
+    shadow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    shadow.Parent = popupFrame
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, -20, 0, 30)
+    title.Position = UDim2.new(0, 10, 0, 10)
+    title.Text = config.Title or "Notice"
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = config.Titlepx or 20
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.BackgroundTransparency = 1
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.ZIndex = 7
+    title.Name = "Title"
+    title.Parent = popupFrame
+    local content = Instance.new("TextLabel")
+    content.Size = UDim2.new(1, -20, 1, -100)
+    content.Position = UDim2.new(0, 10, 0, 40)
+    content.Text = config.Content or "Message goes here"
+    content.Font = Enum.Font.Gotham
+    content.TextSize = config.Contentpx or 16
+    content.TextColor3 = Color3.fromRGB(200, 200, 200)
+    content.BackgroundTransparency = 1
+    content.TextWrapped = true
+    content.TextXAlignment = Enum.TextXAlignment.Left
+    content.TextYAlignment = Enum.TextYAlignment.Top
+    content.ZIndex = 7
+    content.Name = "Content"
+    content.Parent = popupFrame
+    local closeButton = Instance.new("TextButton")
+    closeButton.Size = UDim2.new(0, 90, 0, 30)
+    closeButton.Position = UDim2.new(0.5, -45, 1, -50)
+    closeButton.Text = "OK"
+    closeButton.Font = Enum.Font.GothamMedium
+    closeButton.TextSize = 16
+    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeButton.BackgroundColor3 = Color3.fromRGB(70, 130, 255)
+    closeButton.ZIndex = 7
+    closeButton.Name = "CloseButton"
+    closeButton.Parent = popupFrame
+    Instance.new("UICorner", closeButton).CornerRadius = UDim.new(0, 8)
+    local tweenService = game:GetService("TweenService")
+    local onTween = tweenService:Create(popupFrame, TweenInfo.new(config.OnSmooth or 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Size = UDim2.new(0, boxWidth, 0, boxHeight)
+    })
+    onTween:Play()
+    local function ClosePopup()
+        local fadeTween1 = tweenService:Create(popupFrame, TweenInfo.new(config.OffSmooth or 0.3), {BackgroundTransparency = 1})
+        local fadeTween2 = tweenService:Create(title, TweenInfo.new(config.OffSmooth or 0.3), {TextTransparency = 1})
+        local fadeTween3 = tweenService:Create(content, TweenInfo.new(config.OffSmooth or 0.3), {TextTransparency = 1})
+        local fadeTween4 = tweenService:Create(closeButton, TweenInfo.new(config.OffSmooth or 0.3), {
+            BackgroundTransparency = 1,
+            TextTransparency = 1
+        })
+        local fadeTween5 = tweenService:Create(bgBlur, TweenInfo.new(config.OffSmooth or 0.3), {BackgroundTransparency = 1})
+        fadeTween1:Play()
+        fadeTween2:Play()
+        fadeTween3:Play()
+        fadeTween4:Play()
+        fadeTween5:Play()
+        task.delay(config.OffSmooth or 0.3, function()
+            if popupGui then
+                popupGui:Destroy()
+            end
+        end)
+    end
+    closeButton.MouseButton1Click:Connect(ClosePopup)
+    if config.Delay and tonumber(config.Delay) then
+        task.delay(config.Delay, function()
+            if popupGui and popupGui.Parent then
+                ClosePopup()
+            end
+        end)
+    end
+    if config.Draggable then
+        popupFrame.Active = true
+        popupFrame.Draggable = true
+    end
+end
+getgenv().ShowPopup = ShowPopup
